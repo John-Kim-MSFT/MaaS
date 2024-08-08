@@ -5,11 +5,14 @@ import openai
 import json
 import os
 from langchain_openai import AzureChatOpenAI
-from langchain.schema import HumanMessage
-from langchain import LLMChain
-from langchain_core.prompts import ChatPromptTemplate
+from langchain import PromptTemplate
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
 
-### Configuring API from a config file to protect sensitive information
+# Configuring API from a config file to protect sensitive information
 with open(r'config1.json') as config_file:
     config_details = json.load(config_file)
 openai_api_base=config_details['OPENAI_API_BASE']
@@ -28,21 +31,36 @@ llm = AzureChatOpenAI(
     max_retries=2
 )
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            "You are a helpful assistant that translates {input} to {output_language}.",
-        ),
-        ("human", "{input}"),
-    ]
+# Doc on chaining and invoking: https://github.com/Azure-Samples/openai/blob/main/Basic_Samples/LangChain/working_with_langchain.ipynb
+
+template = """
+You are a skin care consulant that recommends products based on customer
+needs and preferences.
+
+What is a good {product_type} to help with {customer_request}?
+"""
+
+prompt = PromptTemplate(
+input_variables=["product_type", "customer_request"],
+template=template,
 )
 
-chain = prompt | llm
-chain.invoke(
-    {
-        "input_language": "English",
-        "output_language": "German",
-        "input": "How do I disable content filters for Azure AI Serverless endpoints?",
-    }
-)
+print("Example #1:")
+print(llm([HumanMessage(content=prompt.format(
+        product_type="face wash",
+        customer_request = "acne prone skin"
+    ))]
+))
+print("\n")
+
+# Second Example
+system_message = "You are an AI assistant travel assistant that provides vacation recommendations."
+
+system_message_prompt = SystemMessagePromptTemplate.from_template(system_message)
+human_template="{text}"
+human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
+chain = LLMChain(llm=llm, prompt=chat_prompt)
+result = chain.run(f"Where should I go on vaction in Decemember for warm weather and beaches?")
+print("Example #2:")
+print(result)

@@ -5,4 +5,5 @@
   <li> Low code: imported directly from Azure AI studio that uses On Your Data (Azure AI support documentation) and the Index (embeddings + vector store) to create a chatbot
   <li> Link to chatbot: https://azure-maas.azurewebsites.net/
 
+![image](https://github.com/user-attachments/assets/a2446a71-4bab-4735-be86-d99930e93ad9)
 

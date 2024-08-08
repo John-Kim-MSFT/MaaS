@@ -42,7 +42,7 @@ llm = AzureChatOpenAI(
 
 # Load the document, split it into chunks, embed each chunk and load it into the vector store. Documentation here: https://python.langchain.com/v0.1/docs/modules/data_connection/vectorstores/
 raw_documents = TextLoader('r'C:\Users\kimjoh\Downloads\azureaidoc\document.txt').load()
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0) # Chunking based on size is not the best way to improve RAG -- one idea is to create embeddings of summaries of chunks; the low code solution uses semantic + hybrid search to improve the query results
 documents = text_splitter.split_documents(raw_documents)
 db = Chroma.from_documents(documents, OpenAIEmbeddings())
 

@@ -12,10 +12,10 @@ from langchain.prompts.chat import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
+from langchain_community.vectorstores.azuresearch import AzureSearch
+from langchain_openai import AzureOpenAIEmbeddings, OpenAIEmbeddings
 from langchain_community.document_loaders import TextLoader
-from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
-from langchain_chroma import Chroma
 
 
 # Configuring API from a config file to protect sensitive information
@@ -40,14 +40,43 @@ llm = AzureChatOpenAI(
 )
 
 
-# Load the document, split it into chunks, embed each chunk and load it into the vector store. Documentation here: https://python.langchain.com/v0.1/docs/modules/data_connection/vectorstores/
-raw_documents = TextLoader('r'C:\Users\kimjoh\Downloads\azureaidoc\document.txt').load()
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0) # Chunking based on size is not the best way to improve RAG -- one idea is to create embeddings of summaries of chunks; the low code solution uses semantic + hybrid search to improve the query results
-documents = text_splitter.split_documents(raw_documents)
-db = Chroma.from_documents(documents, OpenAIEmbeddings())
+# Load the document, split it into chunks, embed each chunk, load into the vector store, and perform hybrid search
+# Documentation here: https://python.langchain.com/v0.1/docs/integrations/vectorstores/azuresearch/; https://python.langchain.com/v0.1/docs/modules/data_connection/vectorstores/
 
-query = "How do I disable content filters for Azure AI Serverless endpoints?"
-embedding_vector = OpenAIEmbeddings().embed_query(query)
-docs = db.similarity_search_by_vector(embedding_vector)
-print(docs[0].page_content) 
+azure_endpoint: str = "" #Azure OpenAI endpoint
+azure_openai_api_key: str = "" #API key
+azure_openai_api_version: str = "2023-05-13"
+azure_deployment: str = "text-embedding"
 
+vector_store_address: str = "" #Azure search endpoint
+vector_store_password: str = "" #Azure search admin key
+
+embeddings: AzureOpenAIEmbeddings = AzureOpenAIEmbeddings(
+    azure_deployment=azure_deployment,
+    openai_api_version=azure_openai_api_version,
+    azure_endpoint=azure_endpoint,
+    api_key=azure_openai_api_key,
+)
+
+index_name: str = "maas-chatbot-demo"
+vector_store: AzureSearch = AzureSearch(
+    azure_search_endpoint=vector_store_address,
+    azure_search_key=vector_store_password,
+    index_name=index_name,
+    embedding_function=embeddings.embed_query,
+)
+
+loader = TextLoader('r'C:\Users\kimjoh\Downloads\azureaidoc\document.txt').load()
+
+documents = loader.load()
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+docs = text_splitter.split_documents(documents)
+
+vector_store.add_documents(documents=docs)
+
+docs = vector_store.similarity_search(
+    query="How do I disable content filters for Azure AI Serverless endpoints?",
+    k=3,
+    search_type="hybrid",
+)
+print(docs[0].page_content)

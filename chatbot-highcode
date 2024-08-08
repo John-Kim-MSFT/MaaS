@@ -1,6 +1,6 @@
-%pip install langchain-chroma
-%pip install -U langchain-openai
-%pip install --upgrade pip
+# %pip install langchain-chroma
+# %pip install -U langchain-openai
+# %pip install --upgrade pip
 
 import openai
 import json

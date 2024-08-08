@@ -3,31 +3,48 @@ os.environ['AZURE_OPENAI_API_KEY'] = '' #insert API key here
 
 import openai
 import json
+import os
+from langchain_openai import AzureChatOpenAI
+from langchain.schema import HumanMessage
+from langchain import LLMChain
+from langchain_core.prompts import ChatPromptTemplate
 
-api_base = "https://ai-paydataai105672313405.openai.azure.com"
-api_key= '' #my key
-deployment_name = 'gpt-4o'
-api_version = '2024-05-13' # this might change in the future
- 
-client = openai.AzureOpenAI(
-    api_key=api_key,  
-    api_version=api_version,
+### Configuring API from a config file to protect sensitive information
+with open(r'config1.json') as config_file:
+    config_details = json.load(config_file)
+openai_api_base=config_details['OPENAI_API_BASE']
+openai_api_version=config_details['OPENAI_API_VERSION']
+deployment_name=config_details['DEPLOYMENT_NAME']
+openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+openai_api_type="azure"
+
+
+llm = AzureChatOpenAI(
+    azure_deployment="gpt-4o",
+    api_version="2024-05-13",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2
 )
 
-  messages = [
+llm([HumanMessage(content="Write me a poem")])
+
+prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You are a helpful assistant that translates {input} to {output_language}.",
+        ),
+        ("human", "{input}"),
+    ]
+)
+
+chain = prompt | llm
+chain.invoke(
     {
-        "role": "system",
-        "content": "You are an AI assistant that helps people understand how to resolve Azure AI studio issues. The users you are helping are either developers (high code) or non-developers (low code)."
-    },
-    {
-        "role": "user",
-        "content": "What is Microsoft?"
+        "input_language": "English",
+        "output_language": "German",
+        "input": "I love programming.",
     }
-]
-
-res = client.chat.completions.create(
-            model=deployment_name,
-            messages=messages,
-        )
-
-print(res)
+)

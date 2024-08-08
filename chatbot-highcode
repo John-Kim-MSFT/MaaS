@@ -1,0 +1,33 @@
+import os
+os.environ['AZURE_OPENAI_API_KEY'] = '' #insert API key here
+
+import openai
+import json
+
+api_base = "https://ai-paydataai105672313405.openai.azure.com"
+api_key= '' #my key
+deployment_name = 'gpt-4o'
+api_version = '2024-05-13' # this might change in the future
+ 
+client = openai.AzureOpenAI(
+    api_key=api_key,  
+    api_version=api_version,
+)
+
+  messages = [
+    {
+        "role": "system",
+        "content": "You are a helpful assistant."
+    },
+    {
+        "role": "user",
+        "content": "What is Microsoft?"
+    }
+]
+
+res = client.chat.completions.create(
+            model=deployment_name,
+            messages=messages,
+        )
+
+print(res)

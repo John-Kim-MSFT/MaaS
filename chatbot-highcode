@@ -28,8 +28,6 @@ llm = AzureChatOpenAI(
     max_retries=2
 )
 
-llm([HumanMessage(content="Write me a poem")])
-
 prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -45,6 +43,6 @@ chain.invoke(
     {
         "input_language": "English",
         "output_language": "German",
-        "input": "I love programming.",
+        "input": "How do I disable content filters for Azure AI Serverless endpoints?",
     }
 )

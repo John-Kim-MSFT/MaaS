@@ -17,7 +17,7 @@ client = openai.AzureOpenAI(
   messages = [
     {
         "role": "system",
-        "content": "You are a helpful assistant."
+        "content": "You are an AI assistant that helps people understand how to resolve Azure AI studio issues. The users you are helping are either developers (high code) or non-developers (low code)."
     },
     {
         "role": "user",

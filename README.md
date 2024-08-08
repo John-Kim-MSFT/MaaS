@@ -1,4 +1,4 @@
-# MaaS
+# README: Creating a chatbot to answer questions about Azure MaaS
 
 ### Repo for a high code vs. low code experience of implementing MaaS in Azure AI studio.
   <li> High code: uses LangChain tooling for answering a question re: MaaS in Azure using a vector store + embedding of Azure AI support documentation

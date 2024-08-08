@@ -48,7 +48,7 @@ completion = client.chat.completions.create(
               "endpoint": "https://ai-paydataai105672313405.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2023-07-01-preview",
               "authentication": {
                 "type": "api_key",
-                "key": "fee65d7984cd4c83ab83c1ff7e1a6d3e"
+                "key": "" #Insert API key here
               }
             },
             "query_type": "vector_semantic_hybrid",

@@ -1,5 +1,6 @@
-import os
-os.environ['AZURE_OPENAI_API_KEY'] = '' #insert API key here
+%pip install langchain-chroma
+%pip install -U langchain-openai
+%pip install --upgrade pip
 
 import openai
 import json
@@ -11,6 +12,11 @@ from langchain.prompts.chat import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
+from langchain_community.document_loaders import TextLoader
+from langchain_openai import OpenAIEmbeddings
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_chroma import Chroma
+
 
 # Configuring API from a config file to protect sensitive information
 with open(r'config1.json') as config_file:
@@ -21,46 +27,27 @@ deployment_name=config_details['DEPLOYMENT_NAME']
 openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
 openai_api_type="azure"
 
-
+#Instantiation of AzureChatOpenAI based on LangChain framework
 llm = AzureChatOpenAI(
-    azure_deployment="gpt-4o",
-    api_version="2024-05-13",
+    azure_openai_api_key=openai_api_key,
+    azure_deployment_name=deployment_name,
+    azure_api_base=openai_api_base,
+    azure_api_version=openai_api_version,
     temperature=0,
     max_tokens=None,
     timeout=None,
     max_retries=2
 )
 
-# Doc on chaining and invoking: https://github.com/Azure-Samples/openai/blob/main/Basic_Samples/LangChain/working_with_langchain.ipynb
 
-template = """
-You are a skin care consulant that recommends products based on customer
-needs and preferences.
+# Load the document, split it into chunks, embed each chunk and load it into the vector store. Documentation here: https://python.langchain.com/v0.1/docs/modules/data_connection/vectorstores/
+raw_documents = TextLoader('r'C:\Users\kimjoh\Downloads\azureaidoc\document.txt').load()
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+documents = text_splitter.split_documents(raw_documents)
+db = Chroma.from_documents(documents, OpenAIEmbeddings())
 
-What is a good {product_type} to help with {customer_request}?
-"""
+query = "How do I disable content filters for Azure AI Serverless endpoints?"
+embedding_vector = OpenAIEmbeddings().embed_query(query)
+docs = db.similarity_search_by_vector(embedding_vector)
+print(docs[0].page_content) 
 
-prompt = PromptTemplate(
-input_variables=["product_type", "customer_request"],
-template=template,
-)
-
-print("Example #1:")
-print(llm([HumanMessage(content=prompt.format(
-        product_type="face wash",
-        customer_request = "acne prone skin"
-    ))]
-))
-print("\n")
-
-# Second Example
-system_message = "You are an AI assistant travel assistant that provides vacation recommendations."
-
-system_message_prompt = SystemMessagePromptTemplate.from_template(system_message)
-human_template="{text}"
-human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
-chain = LLMChain(llm=llm, prompt=chat_prompt)
-result = chain.run(f"Where should I go on vaction in Decemember for warm weather and beaches?")
-print("Example #2:")
-print(result)

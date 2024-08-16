@@ -5,5 +5,6 @@
   <li> Low code: imported directly from Azure AI studio to create a chatbot using the On Your Data feature
   <li> Link to chatbot: https://azure-maas.azurewebsites.net/
 
-![image](https://github.com/user-attachments/assets/a2446a71-4bab-4735-be86-d99930e93ad9)
+![image](https://github.com/user-attachments/assets/709bc6ab-1f48-4024-a533-6b6e2de0ce78)
+
 
